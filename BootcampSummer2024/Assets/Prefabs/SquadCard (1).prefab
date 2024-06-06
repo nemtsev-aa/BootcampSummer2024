@@ -193,7 +193,7 @@ MonoBehaviour:
   Index: 1
   _button: {fileID: 3007078016848795699}
   _name: {fileID: 3324928263234620109}
-  _percent: {fileID: 8564863607785579684}
+  _count: {fileID: 0}
 --- !u!222 &2269229815675637954
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -288,7 +288,7 @@ GameObject:
   - component: {fileID: 6597092053708936132}
   - component: {fileID: 1004928340721905406}
   m_Layer: 5
-  m_Name: Progress (Image)
+  m_Name: CountBackground (Image)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -365,7 +365,7 @@ GameObject:
   - component: {fileID: 6555700076891659617}
   - component: {fileID: 8564863607785579684}
   m_Layer: 5
-  m_Name: Percent (TMP)
+  m_Name: CountLabel (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -419,7 +419,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0%
+  m_text: 15
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 772f1e12c1b90bf4692b04bb34ff902b, type: 2}
   m_sharedMaterial: {fileID: 1817927897094361642, guid: 772f1e12c1b90bf4692b04bb34ff902b, type: 2}

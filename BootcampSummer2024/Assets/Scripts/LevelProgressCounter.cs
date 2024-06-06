@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public class LevelProgressCounter : ITickable{
+public class LevelProgressCounter : ITickable {
     public event Action LevelIsOver;
     public event Action<float, float> HasBeenUpdated;
 
@@ -10,6 +10,7 @@ public class LevelProgressCounter : ITickable{
     private Transform _portalTransform;
 
     private float _maxX;
+    private float _currentPercent;
 
     public LevelProgressCounter() {
     }
@@ -26,12 +27,19 @@ public class LevelProgressCounter : ITickable{
         _portalTransform = null;
 
         _maxX = 0f;
+
+        LevelIsOver?.Invoke();
     }
 
     public void Tick() {
+        if (_portalTransform == null || _playerTransform == null)
+            return;
+
         float currentX = _portalTransform.position.x - _playerTransform.position.x;
+        _currentPercent = 1 - currentX / _maxX;
 
         if (currentX > 0)
             HasBeenUpdated?.Invoke(currentX, _maxX);
+
     }
 }

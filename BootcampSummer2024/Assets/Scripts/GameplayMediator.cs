@@ -32,6 +32,7 @@ public class GameplayMediator : MonoBehaviour {
     private void OnDisable() {
         _player.Interaction.ObstacleCollided -= OnPlayerObstacleCollided;
         _player.Interaction.PortalCollided -= OnPlayerPortalCollided;
+
         _gameplayUI.MainMenuButtonClicked -= OnMainMenuButtonClicked;
         _gameplayUI.PauseButtonClicked -= OnPauseButtonClicked;
     }
@@ -53,6 +54,8 @@ public class GameplayMediator : MonoBehaviour {
     }
 
     private void OnPlayerPortalCollided() {
+        _levelProgressCounter.Reset();
+
         Invoke(nameof(NextLevel), 1f);
     }
 

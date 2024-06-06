@@ -15,18 +15,23 @@ public class LevelProgressBar : Bar {
     public override void AddListeners() {
         base.AddListeners();
 
-        if (_progressCounter != null)
+        if (_progressCounter != null) {
             _progressCounter.HasBeenUpdated += OnValueChanged;
+            _progressCounter.LevelIsOver += OnLevelIsOver;
+        }         
     }
 
     public override void RemoveListeners() {
         base.RemoveListeners();
 
-        if (_progressCounter != null)
+        if (_progressCounter != null) {
             _progressCounter.HasBeenUpdated -= OnValueChanged;
+            _progressCounter.LevelIsOver -= OnLevelIsOver;
+        }        
     }
 
     public override void Reset() {
+        Filler.fillAmount = 0f;
         _progressLabel.text = "0%";
     }
 
@@ -37,8 +42,13 @@ public class LevelProgressBar : Bar {
         if (Filler != null)
             Filler.fillAmount = currentPercent;
 
-        if (_progressLabel != null) {
-            _progressLabel.text = $"{(int)currentPercent * 10 } %";
-        }
+        if (_progressLabel != null) 
+            _progressLabel.text = $"{(int)(currentPercent * 100)} %";
     }
+
+    private void OnLevelIsOver() {
+        Filler.fillAmount = 1f;
+        _progressLabel.text = "100%";
+    }
+
 }

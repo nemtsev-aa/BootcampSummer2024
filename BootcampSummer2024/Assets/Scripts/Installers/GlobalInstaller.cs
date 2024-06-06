@@ -2,19 +2,24 @@ using UnityEngine;
 using Zenject;
 
 public class GlobalInstaller : MonoInstaller {
+    [SerializeField] private SaveManagerConfig _saveConfig;
+    private Logger _logger;
 
     public override void InstallBindings() {
         BindServices();
         BindInput();
     }
 
-    private void BindServices() {  
+    private void BindServices() {
+        Container.Bind<Logger>().AsSingle();
         Container.Bind<PauseHandler>().AsSingle();
         Container.Bind<CoinCounter>().AsSingle();
 
         LevelProgressCounter progressCounter = new LevelProgressCounter();
         Container.BindInstance(progressCounter).AsSingle();
         Container.BindInterfacesAndSelfTo<ITickable>().FromInstance(progressCounter).AsSingle();
+
+        BindSaveManager();
     }
 
     private void BindInput() {
@@ -24,5 +29,16 @@ public class GlobalInstaller : MonoInstaller {
             Container.BindInterfacesAndSelfTo<DesktopInput>().AsSingle();
 
         Container.Bind<SwipeHandler>().AsSingle().NonLazy();
+    }
+
+    private void BindSaveManager() {
+        if (_saveConfig.SavePath == "")
+            _saveConfig.SetPath(Application.persistentDataPath);
+
+        Container.BindInstance(_saveConfig).AsSingle();
+
+        Container.Bind<SavesManager>().AsSingle();
+        Container.Bind<PlayerProgressLoader>().AsSingle();
+        Container.Bind<PlayerProgressManager>().AsSingle();
     }
 }

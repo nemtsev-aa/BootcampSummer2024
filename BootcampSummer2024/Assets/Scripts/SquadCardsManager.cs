@@ -5,7 +5,7 @@ using System.Linq;
 
 
 public class SquadCardsManager : MonoBehaviour, IDisposable {
-    public event Action<int> LevelIndexSelected;
+    public event Action<int> SquadIndexSelected;
 
     [SerializeField] private List<SquadCard> _squadCards = new List<SquadCard>();
 
@@ -15,7 +15,7 @@ public class SquadCardsManager : MonoBehaviour, IDisposable {
 
     public void SetPercentByIndex(int index, float value) {
         SquadCard card = _squadCards.FirstOrDefault(c => c.Index == index);
-        card.SetPercent(value);
+        card.SetCount(value);
     }
 
     private void AddListeners() {
@@ -32,7 +32,7 @@ public class SquadCardsManager : MonoBehaviour, IDisposable {
     }
 
     private void OnSquadCardSelected(int index) {
-        LevelIndexSelected?.Invoke(index);
+        SquadIndexSelected?.Invoke(index);
     }
 
     public void Dispose() {

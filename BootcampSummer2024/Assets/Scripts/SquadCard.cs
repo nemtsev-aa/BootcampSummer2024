@@ -9,10 +9,10 @@ public class SquadCard : MonoBehaviour {
     [field: SerializeField] public int Index;
     [SerializeField] private Button _button;
     [SerializeField] private TextMeshProUGUI _name;
-    [SerializeField] private TextMeshProUGUI _percent;
+    [SerializeField] private TextMeshProUGUI _count;
 
-    public void SetPercent(float value) {
-        _percent.text = $"{(int)value}%";
+    public void SetCount(float value) {
+        _count.text = $"Участники: {(int)value}";
     }
 
     public void Init() {
