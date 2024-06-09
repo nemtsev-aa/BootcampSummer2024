@@ -12,6 +12,9 @@ public class LevelProgressCounter : ITickable {
     private float _maxX;
     private float _currentPercent;
 
+    public int CurrentPercent => (int)(_currentPercent * 100);
+
+
     public LevelProgressCounter() {
     }
 
@@ -23,12 +26,13 @@ public class LevelProgressCounter : ITickable {
     }
 
     public void Reset() {
+        LevelIsOver?.Invoke();
+
         _playerTransform = null;
         _portalTransform = null;
 
         _maxX = 0f;
 
-        LevelIsOver?.Invoke();
     }
 
     public void Tick() {

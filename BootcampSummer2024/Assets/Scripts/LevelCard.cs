@@ -11,13 +11,16 @@ public class LevelCard : MonoBehaviour {
     [SerializeField] private Button _button;
     [SerializeField] private TextMeshProUGUI _name;
     [SerializeField] private TextMeshProUGUI _percent;
+    [SerializeField] private TextMeshProUGUI _coins;
 
     public void Init() {
-        _name.text = $"Уровень {Index}";
+        _name.text = $"{Index}";
     }
 
-    public void SetPercent(float value) {
-        _percent.text = $"{(int)value}%";
+    public void SetLevelProgress(float percent, int coins) {
+        _percent.text = $"{(int)percent}%";
+        _coins.text = $"{coins}";
+
     }
 
     private void OnEnable() {

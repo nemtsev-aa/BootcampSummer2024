@@ -10,4 +10,15 @@ public class PlayerProgressData {
     }
 
     public List<LevelProgressData> LevelProgressDatas { get; private set; }
+
+
+    public int GetScore() {
+        int currentScore = 0;
+
+        foreach (var iLevelProgressData in LevelProgressDatas) {
+            currentScore += iLevelProgressData.Percent + iLevelProgressData.CoinsCount;
+        }
+
+        return currentScore;
+    }
 }

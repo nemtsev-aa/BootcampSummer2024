@@ -8,15 +8,24 @@ public class SquadCard : MonoBehaviour {
 
     [field: SerializeField] public int Index;
     [SerializeField] private Button _button;
+    [SerializeField] private Image _frameImage;
     [SerializeField] private TextMeshProUGUI _name;
     [SerializeField] private TextMeshProUGUI _count;
+
+    public bool IsSelected { get; private set; }
+
+    public void Init() {
+        ShowFrame();
+        _name.text = $"Отряд {Index}";
+    }
 
     public void SetCount(float value) {
         _count.text = $"Участники: {(int)value}";
     }
 
-    public void Init() {
-        _name.text = $"Отряд {Index}";
+    public void SetSelectedStatus(bool status) {
+        IsSelected = status;
+        ShowFrame();
     }
 
     private void OnEnable() {
@@ -29,5 +38,9 @@ public class SquadCard : MonoBehaviour {
 
     private void ClickSquadCard() {
         Selected?.Invoke(Index);
+    }
+
+    private void ShowFrame() {
+        _frameImage.enabled = IsSelected;
     }
 }

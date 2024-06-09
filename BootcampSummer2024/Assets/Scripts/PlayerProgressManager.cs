@@ -1,93 +1,125 @@
 using Cysharp.Threading.Tasks;
-using GamePush;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class PlayerProgressManager {
-    private const string PlayerData = "PlayerData";
-    private const string DefaultProgress = "DefaultPlayerProgress";
+    public const int DEFAULTSCORE = 0;
+    public const int DEFAULTSQUADINDEX = 0;
 
     private readonly Logger _logger;
     private readonly PlayerProgressLoader _progressLoader;
-    private PlayerProgressData _currentProgress;
+    
+    private PlayerProgressData _currentProgressData;
+    private PlayerScoreData _currentScoreData;
 
     public PlayerProgressManager(Logger logger, SavesManager savesManager) {
         _logger = logger;
         _progressLoader = new PlayerProgressLoader(logger, savesManager);
     }
 
-    private IReadOnlyList<LevelProgressData> LevelProgress => _currentProgress.LevelProgressDatas;
+    private IReadOnlyList<LevelProgressData> LevelProgress => _currentProgressData.LevelProgressDatas;
 
-    public async UniTask LoadProgress() {
+    #region GET/SET
+    public async UniTask GetCurrentProgress() {
         _logger.Log("PlayerProgress Loading...");
 
-        _currentProgress = await _progressLoader.LoadPlayerProgress();
+        _currentProgressData = await _progressLoader.LoadPlayerProgress();
+        
+        _logger.Log($"PlayerProgress loaded is {_currentProgressData != null}");
+    }
+    
+    public async UniTask GetCurrentScore() {
+        _logger.Log("PlayerScore Loading...");
 
-        if (_currentProgress.LevelProgressDatas != null)
-            _logger.Log("PlayerProgress loaded success");
-        else
-            _logger.Log("PlayerProgress loaded fialed");
+        var currentSquadIndex = await _progressLoader.LoadSquadIndex();
+
+        if (currentSquadIndex == 0)
+            currentSquadIndex = DEFAULTSQUADINDEX;
+
+        var currentScore = await _progressLoader.LoadPlayerScore();
+
+        if (currentScore == 0)
+            currentScore = DEFAULTSCORE;
+
+        _currentScoreData = new PlayerScoreData(currentSquadIndex, currentScore);
+
+        _logger.Log($"PlayerScore loaded is {_currentScoreData != null}");
     }
 
-    public void UpdateProgressByLevel(LevelProgressData levelProgressData) {
-        LevelProgressData data = _currentProgress.LevelProgressDatas.First(data => data.Index == levelProgressData.Index);
-
-        data.SetPercent(levelProgressData.Percent);
-        data.SetCoinsCount(levelProgressData.CoinsCount);
-
-        _progressLoader.SavePlayerProgress(_currentProgress);
+    public IReadOnlyList<LevelProgressData> GetLevelsProgressData() {
+        return _currentProgressData.LevelProgressDatas;
     }
 
     public int GetCoinsCountByLevelIndex(int levelIndex) {
-        LevelProgressData data = _currentProgress.LevelProgressDatas.First(data => data.Index == levelIndex);
+        LevelProgressData data = _currentProgressData.LevelProgressDatas.First(data => data.Index == levelIndex);
         return data.CoinsCount;
     }
 
-    public async void ResetLocalPlayerProgress() {
-        var defaultPlayerProgress = await _progressLoader.LoadDefaultProgress();
-
-        ResetProgress(defaultPlayerProgress);
-
-        string defaultPlayerProgressToString = JsonConvert.SerializeObject(defaultPlayerProgress);
-        PlayerPrefs.SetString(DefaultProgress, defaultPlayerProgressToString);
+    public int GetPercentByLevelIndex(int levelIndex) {
+        LevelProgressData data = _currentProgressData.LevelProgressDatas.First(data => data.Index == levelIndex);
+        return data.Percent;
+    }
+    
+    public int GetSquadIndex() {
+        return _currentScoreData.SquadIndex;
     }
 
-    public async void ResetCloudPlayerProgress() {
-        var defaultPlayerProgress = await _progressLoader.LoadDefaultProgress();
-
-        ResetProgress(defaultPlayerProgress);
-
-        string defaultPlayerProgressToString = JsonConvert.SerializeObject(defaultPlayerProgress);
-        GP_Player.Set(PlayerData, defaultPlayerProgressToString);
-        GP_Player.Sync();
+    public void SetSquadIndex(int index) {
+        if (_currentScoreData.SquadIndex == 0) {
+            _currentScoreData.SetSquadIndex(index);
+        }
     }
 
-    public IReadOnlyList<LevelProgressData> GetLevelProgress() {
-        return _currentProgress.LevelProgressDatas;
+    #endregion
+
+    #region UPDATE
+    public void UpdateProgressByLevel(LevelProgressData levelProgressData) {
+        LevelProgressData data = _currentProgressData.LevelProgressDatas.First(data => data.Index == levelProgressData.Index);
+
+        data.SetPercent(levelProgressData.Percent);
+        data.SetCoinsCount(levelProgressData.CoinsCount);
     }
 
-    private void ResetProgress(PlayerProgressData data) {
-        _currentProgress = data;
+    public void UpdateScore() {
+        int currentValue = _currentProgressData.GetScore();
 
-        foreach (var iLevelProgress in _currentProgress.LevelProgressDatas) {
+        if (currentValue > _currentScoreData.Score)
+            _currentScoreData = new PlayerScoreData(_currentScoreData.SquadIndex, currentValue);
+    }
+
+    #endregion
+
+    #region SAVE
+    public void SaveCurrentProgress() {
+        _progressLoader.SaveProgress(_currentProgressData);
+    }
+
+    public void SavePlayerScore() {
+        _progressLoader.SavePlayerScore(_currentScoreData);
+    }
+
+    #endregion
+
+    #region RESET
+    public async void ResetAll() {
+        await ResetProgress();
+        ResetScore();
+    }
+
+    private async UniTask ResetProgress() {
+        _currentProgressData = await _progressLoader.LoadDefaultProgress();
+
+        foreach (var iLevelProgress in _currentProgressData.LevelProgressDatas) {
             iLevelProgress.SetPercent(0);
             iLevelProgress.SetCoinsCount(0);
         }
 
-        _currentProgress.LevelProgressDatas[0].SetPercent(0);
-        _currentProgress.LevelProgressDatas[0].SetCoinsCount(0);
-
-        _progressLoader.SavePlayerProgress(_currentProgress);
+        _progressLoader.SaveProgress(_currentProgressData);
     }
 
-    private void UpdateProgress() {
-        foreach (var iLevelProgress in LevelProgress) {
-            LevelProgressData data = LevelProgress.First(data => data.Index == iLevelProgress.Index);
-
-            data.SetPercent(iLevelProgress.Percent);
-            data.SetCoinsCount(iLevelProgress.CoinsCount);
-        }
+    private void ResetScore() {
+        _currentScoreData = new PlayerScoreData(_currentScoreData.SquadIndex, DEFAULTSCORE);
+        _progressLoader.SavePlayerScore(_currentScoreData);
     }
+    #endregion
 }

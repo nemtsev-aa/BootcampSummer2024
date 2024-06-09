@@ -12,9 +12,11 @@ public class LevelCardsManager : MonoBehaviour, IDisposable {
         AddListeners();
     }
 
-    public void SetPercentByIndex(int index, float value) {
-        LevelCard card = _levelCards.FirstOrDefault(c => c.Index == index);
-        card.SetPercent(value);
+    public void UpdateCards(IReadOnlyList<LevelProgressData> progressData) {
+        for (int i = 0; i < _levelCards.Count; i++) {
+            LevelProgressData data = progressData[i];
+            SetPercentByIndex(i + 1, data.Percent, data.CoinsCount);
+        }
     }
 
     private void AddListeners() {
@@ -32,6 +34,11 @@ public class LevelCardsManager : MonoBehaviour, IDisposable {
 
     private void OnSquadCardSelected(int index) {
         LevelIndexSelected?.Invoke(index);
+    }
+
+    private void SetPercentByIndex(int index, float percent, int score) {
+        LevelCard card = _levelCards.FirstOrDefault(c => c.Index == index);
+        card.SetLevelProgress(percent, score);
     }
 
     public void Dispose() {

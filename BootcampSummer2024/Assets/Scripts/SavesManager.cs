@@ -29,12 +29,12 @@ public class SavesManager : IService, IDisposable {
 
     public IStorageService CurrentService { get { return _saveServices[_currentSaveType]; } }
 
-    public void Save(string key, object data, Action<bool> callback = null) {
-        _saveServices[_currentSaveType].Save(key, data, callback);
+    public void SaveAsString(string key, object data, Action<bool> callback = null) {
+        _saveServices[_currentSaveType].SaveAsString(key, data, callback);
     }
 
-    public void Load<T>(string key, Action<T> callback) {
-        _saveServices[_currentSaveType].Load(key, callback);
+    public void SaveAsInt(string key, int data, Action<bool> callback = null) {
+        _saveServices[_currentSaveType].SaveAsInt(key, data, callback);
     }
 
     public void DeleteFile(string key) {

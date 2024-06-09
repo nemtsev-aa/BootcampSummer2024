@@ -11,15 +11,17 @@ public class GlobalInstaller : MonoInstaller {
     }
 
     private void BindServices() {
-        Container.Bind<Logger>().AsSingle();
+        _logger = new Logger();
+        Container.Bind<Logger>().FromInstance(_logger).AsSingle();
+
         Container.Bind<PauseHandler>().AsSingle();
         Container.Bind<CoinCounter>().AsSingle();
+        Container.Bind<SoundsLoader>().AsSingle();
 
-        LevelProgressCounter progressCounter = new LevelProgressCounter();
-        Container.BindInstance(progressCounter).AsSingle();
-        Container.BindInterfacesAndSelfTo<ITickable>().FromInstance(progressCounter).AsSingle();
+        Container.BindInterfacesAndSelfTo<LevelProgressCounter>().AsSingle();
 
         BindSaveManager();
+        BindSoundManager();
     }
 
     private void BindInput() {
@@ -40,5 +42,10 @@ public class GlobalInstaller : MonoInstaller {
         Container.Bind<SavesManager>().AsSingle();
         Container.Bind<PlayerProgressLoader>().AsSingle();
         Container.Bind<PlayerProgressManager>().AsSingle();
+    }
+
+    private void BindSoundManager() {
+        Container.Bind<EnvironmentSoundConfig>().AsSingle();
+        Container.Bind<PlayerSoundConfig>().AsSingle();
     }
 }
