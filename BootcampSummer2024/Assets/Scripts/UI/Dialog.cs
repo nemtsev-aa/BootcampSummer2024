@@ -39,6 +39,15 @@ public class Dialog : MonoBehaviour, IDisposable {
         panel.Show(value);
     }
 
+    public virtual void UpdatePanels() {
+        if (Panels.Count == 0)
+            return;
+
+        foreach (var iPanel in Panels) {
+            iPanel.UpdateContent();
+        }
+    }
+
     public virtual void ResetPanels() {
         if (Panels.Count == 0)
             return;

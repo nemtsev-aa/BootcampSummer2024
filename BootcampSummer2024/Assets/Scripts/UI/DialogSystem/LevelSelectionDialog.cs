@@ -5,6 +5,13 @@ public class LevelSelectionDialog : Dialog {
 
     private LevelCardsPanel _levelCardsPanel;
 
+    public override void Show(bool value) {
+        base.Show(value);
+
+        if (true) 
+            _levelCardsPanel.Show(true);
+    }
+
     public override void InitializationPanels() {
         _levelCardsPanel = GetPanelByType<LevelCardsPanel>();
         _levelCardsPanel.Init();
@@ -15,7 +22,6 @@ public class LevelSelectionDialog : Dialog {
 
         _levelCardsPanel.LevelIndexSelected += OnLevelIndexSelected;
     }
-
 
     public override void RemoveListeners() {
         base.RemoveListeners();

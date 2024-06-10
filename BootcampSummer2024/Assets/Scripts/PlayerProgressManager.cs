@@ -19,6 +19,7 @@ public class PlayerProgressManager {
 
     private IReadOnlyList<LevelProgressData> LevelProgress => _currentProgressData.LevelProgressDatas;
 
+
     #region GET/SET
     public async UniTask GetCurrentProgress() {
         _logger.Log("PlayerProgress Loading...");
@@ -48,6 +49,10 @@ public class PlayerProgressManager {
 
     public IReadOnlyList<LevelProgressData> GetLevelsProgressData() {
         return _currentProgressData.LevelProgressDatas;
+    }
+
+    public IReadOnlyList<SquadData> GetSquadDatas() {
+        return null;
     }
 
     public int GetCoinsCountByLevelIndex(int levelIndex) {

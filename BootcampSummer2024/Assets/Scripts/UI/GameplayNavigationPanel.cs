@@ -1,29 +1,31 @@
-using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameplayUI : MonoBehaviour {
+public class GameplayNavigationPanel : UIPanel {
     public event Action MainMenuButtonClicked;
-    public event Action PauseButtonClicked;
+    public event Action<bool> PauseButtonClicked;
 
     [SerializeField] private Button _mainMenuButton;
     [SerializeField] private Button _pauseButton;
-    [SerializeField] private LevelProgressBar _progressBar;
 
-    public LevelProgressBar LevelProgressBar => _progressBar;
-    
-    private void OnEnable() {
+    private bool _isPaused = false;
+
+    public void Init() {
+        AddListeners();
+    }
+
+    public override void AddListeners() {
         _mainMenuButton.onClick.AddListener(ClickMainMenuButton);
         _pauseButton.onClick.AddListener(ClickPauseButton);
     }
 
-    private void OnDisable() {
+    public override void RemoveListeners() {
         _mainMenuButton.onClick.RemoveListener(ClickMainMenuButton);
         _pauseButton.onClick.RemoveListener(ClickPauseButton);
     }
 
-    private void ClickPauseButton() => PauseButtonClicked?.Invoke();
-    
+    private void ClickPauseButton() => PauseButtonClicked?.Invoke(!_isPaused);
+
     private void ClickMainMenuButton() => MainMenuButtonClicked?.Invoke();
 }

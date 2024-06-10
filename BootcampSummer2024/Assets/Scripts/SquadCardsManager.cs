@@ -1,21 +1,29 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
+using Zenject;
 
-public class SquadCardsManager : MonoBehaviour, IDisposable {
+public class SquadCardsManager : MonoBehaviour {
     public event Action<int> SquadIndexSelected;
 
     [SerializeField] private List<SquadCard> _squadCards = new List<SquadCard>();
 
     private SquadCard _selectedCard;
+    private PlayerProgressManager _progressManager;
+
+    [Inject]
+    public void Construct(PlayerProgressManager progressManager) {
+        _progressManager = progressManager;
+    }
 
     public void Init() {
         AddListeners();
     }
 
-    public async UniTask UpadeCards(List<SquadData> squadDatas) {
+    public void UpadeCards() {
+        var squadDatas = _progressManager.GetSquadDatas();
+
         if (squadDatas == null || squadDatas.Count == 0)
             return;
 
@@ -23,8 +31,6 @@ public class SquadCardsManager : MonoBehaviour, IDisposable {
             SquadCard card = _squadCards.FirstOrDefault(c => c.Index == iData.Index);
             card.SetCount(iData.Count);
         }
-
-        await UniTask.Yield();
     }
 
     public void ShowSelectCard(int index) {
@@ -33,7 +39,7 @@ public class SquadCardsManager : MonoBehaviour, IDisposable {
         if (card != null) {
             _selectedCard = card;
             card.SetSelectedStatus(true);
-        }    
+        }
     }
 
     private void SetPlayerCountBySquadIndex(int index, float value) {
@@ -57,12 +63,12 @@ public class SquadCardsManager : MonoBehaviour, IDisposable {
     private void OnSquadCardSelected(int index) {
         SquadCard card = _squadCards.FirstOrDefault(c => c.Index == index);
 
-        if (card.Equals(_selectedCard)) 
+        if (card.Equals(_selectedCard))
             SquadIndexSelected?.Invoke(index);
-        else 
+        else
             SwitchSelectedCard(card);
     }
-     
+
     private void SwitchSelectedCard(SquadCard newSelectedCard) {
         if (_selectedCard != null)
             _selectedCard.SetSelectedStatus(false);
@@ -74,5 +80,4 @@ public class SquadCardsManager : MonoBehaviour, IDisposable {
     public void Dispose() {
         RemoveListeners();
     }
-
 }

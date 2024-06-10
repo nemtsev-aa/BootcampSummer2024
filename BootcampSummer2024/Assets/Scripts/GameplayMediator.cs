@@ -38,8 +38,6 @@ public class GameplayMediator : MonoBehaviour {
         _levelProgressCounter = levelProgressCounter;
         _levelProgressCounter.SetCompanents(_player.Move.transform, _portal.transform);
 
-        _gameplayUI.LevelProgressBar.Init(_levelProgressCounter);
-
         _environmentSoundManager.Init();
          _playerSFXManager.Init(_player);
     }
@@ -52,17 +50,11 @@ public class GameplayMediator : MonoBehaviour {
     private void OnEnable() {
         _player.Interaction.ObstacleCollided += OnPlayerObstacleCollided;
         _player.Interaction.PortalCollided += OnPlayerPortalCollided;
-
-        _gameplayUI.MainMenuButtonClicked += OnMainMenuButtonClicked;
-        _gameplayUI.PauseButtonClicked += OnPauseButtonClicked;
     }
 
     private void OnDisable() {
         _player.Interaction.ObstacleCollided -= OnPlayerObstacleCollided;
         _player.Interaction.PortalCollided -= OnPlayerPortalCollided;
-
-        _gameplayUI.MainMenuButtonClicked -= OnMainMenuButtonClicked;
-        _gameplayUI.PauseButtonClicked -= OnPauseButtonClicked;
     }
 
     public void ResetPlayerProgress() => _playerProgressManager.ResetAll();
@@ -135,7 +127,6 @@ public class GameplayMediator : MonoBehaviour {
             Invoke(nameof(RestartLevel), 1f);
 
         if (_switchover == Switchovers.NextLevel) {
-            _gameplayUI.LevelProgressBar.ShowLevelIsOver();
             _levelProgressCounter.Reset();
             _coinCounter.RemoveCoinsFromLevel();
 

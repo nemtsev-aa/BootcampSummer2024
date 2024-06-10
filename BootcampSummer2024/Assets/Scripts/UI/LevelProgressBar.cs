@@ -1,14 +1,18 @@
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 public class LevelProgressBar : Bar {
     [SerializeField] private TextMeshProUGUI _progressLabel;
 
     private LevelProgressCounter _progressCounter;
 
-    public void Init(LevelProgressCounter progressCounter) {
+    [Inject]
+    public void Construct(LevelProgressCounter progressCounter) {
         _progressCounter = progressCounter;
+    }
 
+    public void Init() {
         AddListeners();
     }
 

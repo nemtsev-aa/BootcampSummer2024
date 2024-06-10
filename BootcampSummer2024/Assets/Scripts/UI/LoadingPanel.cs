@@ -6,6 +6,10 @@ public class LoadingPanel : UIPanel {
     [SerializeField] private TextMeshProUGUI _label;
     private Tween _fadeTween;
 
+    public void Init() {
+
+    }
+
     public override void Show(bool value) {
         base.Show(value);
 

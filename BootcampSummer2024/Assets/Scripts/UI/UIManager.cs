@@ -1,21 +1,24 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Zenject;
-using System;
 
 public class UIManager : MonoBehaviour, IDisposable {
+    [SerializeField] private RectTransform _dialogsParent;
+
     private DialogFactory _factory;
     private List<Dialog> _dialogs;
 
     private GameplayMediator _gameplayMediator;
 
-     public DialogSwitcher DialogSwitcher { get; private set; }
+    public DialogSwitcher DialogSwitcher { get; private set; }
 
     [Inject]
     public void Constuct(DialogFactory factory) {
         _factory = factory;
-        _factory.SetDialogsParent(GetComponent<RectTransform>());
+        _factory.SetDialogsParent(_dialogsParent);
+
         _dialogs = new List<Dialog>();
     }
 
@@ -29,6 +32,10 @@ public class UIManager : MonoBehaviour, IDisposable {
 
     public void ShowMainMenuDialog() => DialogSwitcher.ShowDialog<MainMenuDialog>();
 
+    public void ShowSquadSelectionDialog() => DialogSwitcher.ShowDialog<SquadSelectionDialog>();
+
+    public void ShowLoadingDialog() => DialogSwitcher.ShowDialog<LoadingDialog>();
+
     #region Creating Dialogs
 
     public T GetDialogByType<T>() where T : Dialog {
@@ -39,6 +46,8 @@ public class UIManager : MonoBehaviour, IDisposable {
         else
             return CreateNewDialog<T>();
     }
+
+
 
     private T GetDialogFromList<T>() where T : Dialog {
         if (_dialogs.Count == 0)
@@ -60,57 +69,60 @@ public class UIManager : MonoBehaviour, IDisposable {
 
     #region Dialogs Events
     private void AddListener() {
-        SettingsDialog.BackClicked += OnSettingsDialogBackClicked;
-        SettingsDialog.ResetClicked += OnSettingsDialogResetClicked;
-
-        AboutDialog.BackClicked += OnShowMainMenuDialog;
-        LevelSelectionDialog.BackClicked += OnShowMainMenuDialog;
-
         MainMenuDialog.SettingsDialogShowed += OnShowSettingsDialog;
         MainMenuDialog.LevelSelectDialogShowed += OnShowLevelSelectionDialog;
         MainMenuDialog.AboutDialogShowed += OnShowAboutDialog;
 
+        SquadSelectionDialog.BackClicked += OnShowMainMenuDialog;
+        SquadSelectionDialog.SquadIndexSelected += OnSquadIndexSelected;
+
+        LevelSelectionDialog.BackClicked += OnShowMainMenuDialog;
         LevelSelectionDialog.LevelStarted += OnLevelStarted;
 
-        GameDialog.ResetClicked += OnGameDialogResetClicked;
         GameDialog.MainMenuClicked += OnMainMenuClicked;
         GameDialog.PauseClicked += OnPauseClicked;
-        GameDialog.LearningClicked += OnLearningClicked;
-        GameDialog.NextLevelClicked += OnGameDialogNextLevelClicked;
+
+        SettingsDialog.BackClicked += OnSettingsDialogBackClicked;
+        SettingsDialog.ResetClicked += OnSettingsDialogResetClicked;
+
+        AboutDialog.BackClicked += OnShowMainMenuDialog;
+        
     }
 
     private void RemoveLisener() {
-        SettingsDialog.BackClicked -= OnSettingsDialogBackClicked;
-        SettingsDialog.ResetClicked -= OnSettingsDialogResetClicked;
-
-        AboutDialog.BackClicked -= OnShowMainMenuDialog;
-        LevelSelectionDialog.BackClicked -= OnShowMainMenuDialog;
-
         MainMenuDialog.SettingsDialogShowed -= OnShowSettingsDialog;
         MainMenuDialog.LevelSelectDialogShowed -= OnShowLevelSelectionDialog;
         MainMenuDialog.AboutDialogShowed -= OnShowAboutDialog;
 
+        SquadSelectionDialog.BackClicked -= OnShowMainMenuDialog;
+        SquadSelectionDialog.SquadIndexSelected -= OnSquadIndexSelected;
+
+        LevelSelectionDialog.BackClicked -= OnShowMainMenuDialog;
         LevelSelectionDialog.LevelStarted -= OnLevelStarted;
 
-        GameDialog.ResetClicked -= OnGameDialogResetClicked;
+
         GameDialog.MainMenuClicked -= OnMainMenuClicked;
-        GameDialog.NextLevelClicked -= OnGameDialogNextLevelClicked;
         GameDialog.PauseClicked -= OnPauseClicked;
-        GameDialog.LearningClicked -= OnLearningClicked;
+
+        SettingsDialog.BackClicked -= OnSettingsDialogBackClicked;
+        SettingsDialog.ResetClicked -= OnSettingsDialogResetClicked;
+
+        AboutDialog.BackClicked -= OnShowMainMenuDialog;
+
     }
-    
+
     #endregion
 
     private void OnShowMainMenuDialog() => DialogSwitcher.ShowDialog<MainMenuDialog>();
 
-    private void OnShowSettingsDialog()  => DialogSwitcher.ShowDialog<SettingsDialog>();
+    private void OnShowSettingsDialog() => DialogSwitcher.ShowDialog<SettingsDialog>();
 
     private void OnShowAboutDialog() => DialogSwitcher.ShowDialog<AboutDialog>();
-   
+
     private void OnShowLevelSelectionDialog() => DialogSwitcher.ShowDialog<LevelSelectionDialog>();
-    
+
     private void OnShowGameplayDialog() => DialogSwitcher.ShowDialog<GameDialog>();
-    
+
     private void OnSettingsDialogBackClicked() => OnShowMainMenuDialog();
 
     private void OnSettingsDialogResetClicked() => _gameplayMediator.ResetPlayerProgress();
@@ -121,10 +133,13 @@ public class UIManager : MonoBehaviour, IDisposable {
         OnShowGameplayDialog();
     }
 
+    private void OnSquadIndexSelected(int squadIndex) {
+        
+        
+    }
+
     #region GameDialog Events
 
-    private void OnLearningClicked(bool value) => _gameplayMediator.SetPause(value);
-    
     private void OnPauseClicked(bool value) => _gameplayMediator.SetPause(value);
 
     private void OnMainMenuClicked() {
@@ -133,19 +148,9 @@ public class UIManager : MonoBehaviour, IDisposable {
         _gameplayMediator.FinishGameplay(Switchovers.MainMenu);
     }
 
-    private void OnGameDialogResetClicked() =>
-        _gameplayMediator.FinishGameplay(Switchovers.CurrentLevel);
-
-
-    private void OnGameDialogNextLevelClicked() {
-        _gameplayMediator.FinishGameplay(Switchovers.NextLevel);
-        OnShowGameplayDialog();
-    }
-        
     #endregion
 
     public void Dispose() {
         RemoveLisener();
     }
-
 }
