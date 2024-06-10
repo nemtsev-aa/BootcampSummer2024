@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class LevelCardsManager : MonoBehaviour, IDisposable {
+public class LevelCardsPanel : UIPanel {
     public event Action<int> LevelIndexSelected;
 
     [SerializeField] private List<LevelCard> _levelCards = new List<LevelCard>();
@@ -19,14 +19,14 @@ public class LevelCardsManager : MonoBehaviour, IDisposable {
         }
     }
 
-    private void AddListeners() {
+    public override void AddListeners() {
         foreach (var iCard in _levelCards) {
             iCard.Init();
             iCard.Selected += OnSquadCardSelected;
         }
     }
 
-    private void RemoveListeners() {
+    public override void RemoveListeners() {
         foreach (var iCard in _levelCards) {
             iCard.Selected -= OnSquadCardSelected;
         }
@@ -39,9 +39,5 @@ public class LevelCardsManager : MonoBehaviour, IDisposable {
     private void SetPercentByIndex(int index, float percent, int score) {
         LevelCard card = _levelCards.FirstOrDefault(c => c.Index == index);
         card.SetLevelProgress(percent, score);
-    }
-
-    public void Dispose() {
-        RemoveListeners();
     }
 }

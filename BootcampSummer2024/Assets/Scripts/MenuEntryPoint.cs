@@ -8,7 +8,7 @@ using Zenject;
 public class MenuEntryPoint : MonoBehaviour {
     [SerializeField] private LoadingPanel _loadingPanel;
     [SerializeField] private SquadCardsManager _squadCardsManager;
-    [SerializeField] private LevelCardsManager _levelCardsManager;
+    [SerializeField] private LevelCardsPanel _levelCardsManager;
     
     [SerializeField] private EnvironmentSoundManager _environmentSoundManager;
     [SerializeField] private PlayerSFXManager _playerSFXManager;

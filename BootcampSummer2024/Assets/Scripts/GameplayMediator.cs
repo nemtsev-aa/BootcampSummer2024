@@ -1,11 +1,19 @@
+using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
 
+public enum Switchovers {
+    MainMenu,
+    CurrentLevel,
+    NextLevel,
+}
+
 public class GameplayMediator : MonoBehaviour {
     [SerializeField] private Player _player;
     [SerializeField] private Portal _portal;
-    [SerializeField] private GameplayUI _gameplayUI;
+
 
     [SerializeField] private EnvironmentSoundManager _environmentSoundManager;
     [SerializeField] private PlayerSFXManager _playerSFXManager;
@@ -14,6 +22,9 @@ public class GameplayMediator : MonoBehaviour {
     private CoinCounter _coinCounter;
     private PlayerProgressManager _playerProgressManager;
     private LevelProgressCounter _levelProgressCounter;
+    private bool _isPause;
+    private Switchovers _switchover;
+    private UIManager _uIManager;
 
     [Inject]
     public void Construct(PauseHandler pauseHandler, LevelProgressCounter levelProgressCounter,
@@ -35,7 +46,7 @@ public class GameplayMediator : MonoBehaviour {
     
     private void Start() {
         _environmentSoundManager.PlaySound(MusicType.Gameplay);
-        //_playerProgressManager.ResetAllData();
+        
     }
 
     private void OnEnable() {
@@ -54,37 +65,49 @@ public class GameplayMediator : MonoBehaviour {
         _gameplayUI.PauseButtonClicked -= OnPauseButtonClicked;
     }
 
-    private void OnPauseButtonClicked() {
-        bool isPaused = _pauseHandler.IsPaused ? false : true;
+    public void ResetPlayerProgress() => _playerProgressManager.ResetAll();
 
-        _pauseHandler.SetPause(isPaused);
-    }
+    public void LevelPreparation(int levelIndex) => SceneManager.LoadScene(levelIndex);
 
-    private void OnMainMenuButtonClicked() {
-        // Получить текущий прогресс
-        // Сохранить текущий прогресс
-        SceneManager.LoadScene(0);
-    }
-
-    private void OnPlayerObstacleCollided() {
-        var newCoinCount = _coinCounter.GetPointsFromLevel();
-        var newPercent = _levelProgressCounter.CurrentPercent;
-        SaveLevelProgress(newCoinCount, newPercent);
-
-        Invoke(nameof(ReloadLevel), 1f);
-    }
-
-    private void OnPlayerPortalCollided() {
-        var newCoinCount = _coinCounter.GetPointsFromLevel();
-        SaveLevelProgress(newCoinCount, 100);
-
-        _gameplayUI.LevelProgressBar.ShowLevelIsOver();
-        _levelProgressCounter.Reset();
+    public void Reset() {
         _coinCounter.RemoveCoinsFromLevel();
-
-        Invoke(nameof(NextLevel), 1f);
+        _levelProgressCounter.Reset();
     }
 
+    public void SetPause(bool value) {
+        _isPause = value;
+        _pauseHandler.SetPause(_isPause);
+    }
+    
+    public void FinishGameplay(Switchovers switchover) {
+        _switchover = switchover;
+
+        int newPercent = 0;
+
+        if (switchover == Switchovers.NextLevel)
+            newPercent = 100;
+        else
+            newPercent = _levelProgressCounter.CurrentPercent;
+
+        var newCoinCount = _coinCounter.GetPointsFromLevel();
+        
+        SaveLevelProgress(newCoinCount, newPercent);
+        Reset();
+        
+        MakeTransition();
+    }
+
+    private void OnPauseButtonClicked() {
+        _isPause = !_isPause;
+        SetPause(_isPause);
+    } 
+    
+    private void OnMainMenuButtonClicked() => FinishGameplay(Switchovers.MainMenu);
+
+    private void OnPlayerObstacleCollided() => FinishGameplay(Switchovers.CurrentLevel);
+
+    private void OnPlayerPortalCollided() => FinishGameplay(Switchovers.NextLevel);
+ 
     private void SaveLevelProgress(int newCoinCount, int newPercent) {
         var currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
         var oldCoinCount = _playerProgressManager.GetCoinsCountByLevelIndex(currentLevelIndex);
@@ -103,7 +126,27 @@ public class GameplayMediator : MonoBehaviour {
         }
     }
 
-    private void ReloadLevel() {
+    private void MakeTransition() {
+
+        if (_switchover == Switchovers.MainMenu)
+            Invoke(nameof(ShowMainMenu), 1f);
+
+        if (_switchover == Switchovers.CurrentLevel)
+            Invoke(nameof(RestartLevel), 1f);
+
+        if (_switchover == Switchovers.NextLevel) {
+            _gameplayUI.LevelProgressBar.ShowLevelIsOver();
+            _levelProgressCounter.Reset();
+            _coinCounter.RemoveCoinsFromLevel();
+
+            Invoke(nameof(NextLevel), 1f);
+        }
+    }
+
+    private void ShowMainMenu() => _uIManager.ShowMainMenuDialog();
+
+    private async UniTask RestartLevel() {
+        await UniTask.Delay(1000);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
